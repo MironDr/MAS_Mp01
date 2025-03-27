@@ -8,8 +8,8 @@ namespace MP01.Models;
 public class TextNoteModel: NoteModel
 {
     public string? ContentJson { get; set; }
-    
-    public static string NoteTypeString => "Text Note";
+
+    private static string NoteTypeString => "Text Note";
     
     [Ignore] 
     public List<string>? Content
