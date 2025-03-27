@@ -18,6 +18,12 @@ public class TextNoteModel: NoteModel
         set => ContentJson = JsonSerializer.Serialize(value);
     }
 
+    public override string ToString()
+    {
+        return base.ToString()
+            + $", NoteType: {NoteTypeString}";
+    }
+
     public override string ToStringFull()
     {
         StringBuilder stringBuilder = new StringBuilder(base.ToStringFull());

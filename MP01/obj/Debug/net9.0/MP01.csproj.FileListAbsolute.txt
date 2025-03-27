@@ -125,3 +125,4 @@ D:\RidersProjects\MP01\MP01\ConsoleApplicationNoteManager\MP01\obj\Debug\net9.0\
 D:\RidersProjects\MP01\MP01\ConsoleApplicationNoteManager\MP01\obj\Debug\net9.0\MP01.pdb
 D:\RidersProjects\MP01\MP01\ConsoleApplicationNoteManager\MP01\obj\Debug\net9.0\MP01.genruntimeconfig.cache
 D:\RidersProjects\MP01\MP01\ConsoleApplicationNoteManager\MP01\obj\Debug\net9.0\ref\MP01.dll
+D:\RidersProjects\MP01\MP01\ConsoleApplicationNoteManager\MP01\obj\Debug\net9.0\MP01.sourcelink.json
