@@ -5,7 +5,7 @@ using MP01.Utilities;
 using MP01.View;
 
 
-var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "dbmp01.sqlite");
+var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "mp01.sqlite");
 
 //Register NotesTypeManager
 ServiceLocator.Register(new NotesTypeManager());
@@ -32,10 +32,11 @@ static void Main()
         {
             Console.WriteLine("Select an action:");
             Console.WriteLine("1 - Create a category");
-            Console.WriteLine("2 - Create a note");
-            Console.WriteLine("3 - Select category");
-            Console.WriteLine("4 - View a note");
-            Console.WriteLine("5 - Exit");
+            Console.WriteLine("2 - Create a text note");
+            Console.WriteLine("3 - Create a account note");
+            Console.WriteLine("4 - Select category");
+            Console.WriteLine("5 - View a note");
+            Console.WriteLine("6 - Exit");
             Console.Write("\nYour choice: ");
 
             string? choice = Console.ReadLine();
@@ -50,8 +51,12 @@ static void Main()
                 case "2":
                     notesView.CreateTextNoteFromView();
                     break;
-
+                
                 case "3":
+                    notesView.CreateAccountNoteFromView();
+                    break;
+
+                case "4":
                     noteModel = notesView.GetNoteFromView();
                     if (noteModel != null)
                     {
@@ -60,7 +65,7 @@ static void Main()
                     
                     break;
 
-                case "4":
+                case "5":
                     noteModel = notesView.GetNoteFromView();
                     if (noteModel != null)
                     {
@@ -72,7 +77,7 @@ static void Main()
                     }
                     break;
 
-                case "5":
+                case "6":
                     Console.WriteLine("Exiting program...");
                     return;
 

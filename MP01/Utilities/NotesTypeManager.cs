@@ -16,7 +16,7 @@ public class NotesTypeManager
     private void RegisterNoteTypes()
     {
         _noteTypes.Add(typeof(TextNoteModel));
-        
+        _noteTypes.Add(typeof(AccountNoteModel));
     }
     
     

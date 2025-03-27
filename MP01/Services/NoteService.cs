@@ -74,7 +74,7 @@ public class NoteService
 
     public List<NoteModel> GetAllNotes()
     {
-        return _notes;
+        return _notes.OrderBy(x => x.CreatedAt).ToList();
     }
     
     

@@ -23,8 +23,15 @@ public class NotesView
     public void CreateCategoryFromView()
     {
         Console.WriteLine("<<<<<<CATEGORY CREATION>>>>>>");
-        Console.WriteLine("Enter the category name:");
-        string categoryName = Console.ReadLine() ?? string.Empty;
+        
+        
+        
+        string categoryName = string.Empty;
+        while (string.IsNullOrEmpty(categoryName))
+        {
+            Console.WriteLine("Enter the category name:");
+            categoryName = Console.ReadLine() ?? string.Empty;
+        }
         
         CategoryDTO categoryDTO = new CategoryDTO
         {
@@ -37,18 +44,20 @@ public class NotesView
     private NoteDTO CreateNoteFromView()
     {
         Console.WriteLine("<<<<<<NOTE CREATION>>>>>>");
-        
-        Console.WriteLine("Enter the title of the note:");
-        string title = Console.ReadLine() ?? string.Empty;
-        
+
+        string title = string.Empty;
+        while (string.IsNullOrEmpty(title))
+        {
+            Console.WriteLine("Enter the title of the note:");
+            title = Console.ReadLine() ?? string.Empty;
+        }
+
         Console.WriteLine("Enter the description of the note (press Enter to skip):");
         string descriptionInput = Console.ReadLine();
 
-        // Если пользователь ничего не ввел, то присваиваем null
+
         string? description = string.IsNullOrEmpty(descriptionInput) ? null : descriptionInput;
-    
-        // Лог для проверки
-        Console.WriteLine($"Description is set to null: {description == null}");
+        
         
         NoteDTO noteDTO = new NoteDTO
         {
@@ -56,6 +65,37 @@ public class NotesView
             Description = description
         };
         return noteDTO;
+    }
+    
+    public void CreateAccountNoteFromView()
+    {
+        NoteDTO noteDTO = CreateNoteFromView();
+
+        string login = string.Empty;
+        while (string.IsNullOrEmpty(login))
+        {
+            Console.WriteLine("Enter the Login of the note:");
+            login = Console.ReadLine() ?? string.Empty;
+        }
+        
+        string password = string.Empty;
+        while (string.IsNullOrEmpty(password))
+        {
+            Console.WriteLine("Enter the Password of the note:");
+            password = Console.ReadLine() ?? string.Empty;
+        }
+        
+
+        
+        AccountNoteDTO accountNoteDto = new AccountNoteDTO
+        {
+            Title = noteDTO.Title,
+            Description = noteDTO.Description,
+            AccountLogin = login,
+            AccountPassword = password
+        };
+
+        _noteService.AddNote(accountNoteDto);
     }
     
     public void CreateTextNoteFromView()

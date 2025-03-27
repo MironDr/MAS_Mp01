@@ -33,7 +33,7 @@ public class NoteModel : BaseModel
     {
         if (noteDTO is TextNoteDTO textNoteDTO)
         {
-            TextNoteModel? newNote = new TextNoteModel
+            TextNoteModel newNote = new TextNoteModel
             {
                 Id = ++MaxId,
                 CreatedAt = DateTime.Now,
@@ -43,6 +43,21 @@ public class NoteModel : BaseModel
             };
             return newNote;
         }
+
+        if (noteDTO is AccountNoteDTO accountNoteModel)
+        {
+            AccountNoteModel newNote = new AccountNoteModel
+            {
+                Id = ++MaxId,
+                CreatedAt = DateTime.Now,
+                Title = accountNoteModel.Title,
+                Description = accountNoteModel.Description,
+                AccountLogin = accountNoteModel.AccountLogin,
+                AccountPassword = accountNoteModel.AccountPassword
+            };
+            return newNote;
+        }
+
 
         throw new ArgumentException("Unknown note type");
 
@@ -56,7 +71,7 @@ public class NoteModel : BaseModel
         if (Description != null)
             stringBuilder.Append($", Description: {Description}");
         
-        stringBuilder.Append($", CreatedAt: {CreatedAt}");
+        stringBuilder.Append($", CreatedAt: {GetCreatedAt()}");
         
         return stringBuilder.ToString();
     }

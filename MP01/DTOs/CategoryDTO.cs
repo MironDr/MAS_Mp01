@@ -2,5 +2,5 @@
 
 public class CategoryDTO : BaseDTO
 {
-    public string CategoryName { get; set; }
+    public string CategoryName { get; init; }
 }
