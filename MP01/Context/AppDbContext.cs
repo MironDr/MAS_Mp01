@@ -12,7 +12,9 @@ public class AppDbContext
     {
         _connection = new SQLiteConnection(dbPath);
         _connection.CreateTable<CategoryModel>();
-
+        _connection.CreateTable<GroupModel>();
+        _connection.CreateTable<TagModel>();
+        
         _noteTypes = ServiceLocator.Get<NotesTypeManager>().GetNoteTypes();
         CreateTables();
     }

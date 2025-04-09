@@ -11,6 +11,9 @@ namespace MP01.Services;
 public class NoteService
 {
     private readonly AppDbContext _context;
+    
+    private readonly GroupService _groupService;
+    
     private readonly List<Type> _noteTypes;
     private List<NoteModel> _notes;
 
@@ -18,10 +21,37 @@ public class NoteService
     public NoteService()
     {
         _context = ServiceLocator.Get<AppDbContext>();
+        _groupService = ServiceLocator.Get<GroupService>();
         _noteTypes = ServiceLocator.Get<NotesTypeManager>().GetNoteTypes();
 
         _notes = GetAllNotesFromDb();
+        InitNotes();
 
+    }
+
+    private void InitNotes()
+    {
+        InitGroups(); 
+        InitGroups();
+    }
+
+    public void InitCategories()
+    {
+        List<CategoryModel> categories = _context.GetAllOfType<CategoryModel>();
+        
+        foreach (NoteModel note in _notes)
+        {
+            note.Category = categories.Find(x => x.Id == note.CategoryId);
+        }
+    }
+    public void InitGroups()
+    {
+        List<GroupModel> groups = _groupService.GetGroups();
+        
+        foreach (NoteModel note in _notes)
+        {
+            note.Group = groups.FirstOrDefault(x => x.Id == note.GroupId);
+        }
     }
 
 
@@ -32,12 +62,12 @@ public class NoteService
     }
 
     
-    public void AddNote(NoteDTO noteDTO)
+    public NoteModel AddNote(NoteDTO noteDTO)
     {
-  
-        _context.Add(NoteModel.CreateNote(noteDTO)); 
+        NoteModel note = NoteModel.CreateNote(noteDTO);
+        _context.Add(note); 
         _notes = GetAllNotesFromDb();
-        
+        return note;
     }
     
     
@@ -68,8 +98,6 @@ public class NoteService
       
         
         return notes;
-        
-        
     }
 
     public List<NoteModel> GetAllNotes()

@@ -11,20 +11,21 @@ public class NotesView
 
     private readonly NoteService _noteService;
     private readonly CategoryService _categoryService;
-
-    private readonly HashSet<Type> _noteTypes = new();
+    private readonly GroupService _groupService;
+    private readonly TagService _tagService;
+    
     
     public NotesView()
     {
         _noteService = ServiceLocator.Get<NoteService>();
         _categoryService = ServiceLocator.Get<CategoryService>();
+        _groupService = ServiceLocator.Get<GroupService>();
+        _tagService = ServiceLocator.Get<TagService>();
     }
     
     public void CreateCategoryFromView()
     {
         Console.WriteLine("<<<<<<CATEGORY CREATION>>>>>>");
-        
-        
         
         string categoryName = string.Empty;
         while (string.IsNullOrEmpty(categoryName))
@@ -102,39 +103,51 @@ public class NotesView
     {
         NoteDTO noteDTO = CreateNoteFromView();
 
-        List<string> contentList = new List<string>();
-        Console.WriteLine("Enter the content of the note (leave empty to finish):");
-
-        while (true)
-        {
-            string content = Console.ReadLine()?.Trim() ?? string.Empty;
-            if (string.IsNullOrEmpty(content))
-                break; 
-
-            contentList.Add(content);
-        }
-
         TextNoteDTO textNoteDto = new TextNoteDTO
         {
             Title = noteDTO.Title,
             Description = noteDTO.Description,
-            Content = contentList
         };
+        
+        TextNoteModel textNoteModel = (TextNoteModel)_noteService.AddNote(textNoteDto);
 
-        _noteService.AddNote(textNoteDto);
+        Console.WriteLine("Enter the content of the note: ");
+
+     
+        while (true)
+        {
+            Console.Write("Enter title for the block (leave empty to stop): ");
+            string title = Console.ReadLine()?.Trim() ?? string.Empty;
+
+
+            if (string.IsNullOrEmpty(title))
+                break;
+
+            Console.Write("Enter content for the block: ");
+            string content = Console.ReadLine()?.Trim() ?? string.Empty;
+
+         
+            textNoteModel.AddTextBlock(title, content);
+        }
+
+        Console.WriteLine("Text note has been created successfully!");
+
+        _noteService.UpdateNote(textNoteModel);
+
+        
     }
 
     public void CompleteNote(NoteModel note)
     {
-        int? id = GetCategoryFromView()?.Id;
+        CategoryModel? categoryModel = GetCategoryFromView();
 
-        if (id == null)
+        if (categoryModel == null)
         {
             Console.WriteLine("Category not found");
             return;
         }
         
-        note.SetCategory(id);
+        note.Category = categoryModel;
         _noteService.UpdateNote(note);
     }
 
@@ -163,6 +176,18 @@ public class NotesView
         }
         
         return null;
+        
+    }
+
+    
+
+    public void CreateGroup()
+    {
+        Console.WriteLine("Set Group Name:");
+        string groupName = Console.ReadLine()?.Trim() ?? string.Empty;
+        
+        
+        _groupService.AddGroup(GroupModel.CreateGroup(groupName));
         
     }
     
@@ -200,13 +225,116 @@ public class NotesView
     
     public void ViewNote(NoteModel note)
     {
-
         Console.WriteLine(note.ToStringFull());
-        
     }
 
+    public void ViewGroups()
+    {
+        Console.WriteLine("<<<<<<Groups>>>>>>>");
+       
+        List<GroupModel> groups = _groupService.GetGroups();
+        
+        foreach (GroupModel groupModel in groups)
+        {
+            Console.WriteLine("\n"+groupModel);
+        }
+        
 
+       
+    }
+
+    private GroupModel? ChooseGroup()
+    {
+        Console.WriteLine("<<<<<<Groups>>>>>>>");
+        
+        List<GroupModel> groups = _groupService.GetGroups();
+        
+        for(int i = 0; i < groups.Count; i++)
+        {
+            Console.WriteLine($"{i+1}. {groups[i].GroupName}\n");
+        }
+        
+        Console.WriteLine("Choose a note:");
+        string input = Console.ReadLine() ?? string.Empty;
+
+        if (int.TryParse(input, out var index))
+        {
+            if(index >= 1 && index <= groups.Count)
+                return groups[index-1];
+            
+        }
+        
+        return null;
+    }
+
+    public void SetGroupToNote()
+    {
+        GroupModel? group = ChooseGroup();
+        
+        if(group == null)
+            return;
+
+        NoteModel? noteModel = GetNoteFromView();
+        
+        if(noteModel == null)
+            return;
+        
+        
+        group.AddNoteToGroup(noteModel);
+        
+        _noteService.UpdateNote(noteModel);
+    }
     
+    public TagModel CreateTag()
+    {
+        Console.Write("Enter tag name: ");
+        string? tagName = Console.ReadLine();
+
+        List<TagModel> tags =  _tagService.GetTags();
+
+        TagModel? tagModel = tags.Find(t => t.TagName == tagName);
+        
+        if (tagModel != null)
+        {
+            return tagModel;
+        }
+
+        tagModel = TagModel.CreateTag(tagName);
+        _tagService.AddTag(tagModel);
+        Console.WriteLine($"Tag '{tagName}' created with ID {tagModel.Id}.");
+        
+
+        return tagModel;
+    }
+
+    public void TagNote()
+    {
+        NoteModel? note = GetNoteFromView();
+        if (note == null)
+        {
+            Console.WriteLine("Note not found.");
+            return;
+        }
+
+        TagModel tagModel = CreateTag();
+        TaggedNotes.Create(tagModel , note);        
+        Console.WriteLine($"Note '{note.Title}' tagged with '{tagModel.TagName}'.");
+    }
+
+    public void ViewTagsAndNotes()
+    {
+        List<TagModel> tags = _tagService.GetTags();
+        
+        Console.WriteLine(tags.Count);
+        
+        foreach (TagModel tag in tags)
+        {
+            foreach (TaggedNotes taggedNotes in tag._taggedNotes)
+            {
+                Console.WriteLine($"Note: {taggedNotes.Note.Title}, Tag: {taggedNotes.Tag.TagName}");
+            }
+        }
+    }
     
     
 }

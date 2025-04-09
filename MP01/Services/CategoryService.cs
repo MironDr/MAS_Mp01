@@ -21,6 +21,7 @@ public class CategoryService
     {
         _context.Add(CategoryModel.CreateCategory(categoryDTO));
         _categories = _context.GetAllOfType<CategoryModel>();
+        ServiceLocator.Get<NoteService>().InitCategories();
     }
     
 

@@ -5,25 +5,12 @@ namespace MP01.Models;
 public abstract class BaseModel
 {
     
-    protected static int MaxId;
     
 
-    [PrimaryKey]
-    public int Id 
-    { 
-        get => _id;
-        init
-        {
-            if (value > MaxId)
-            {
-                MaxId = value;
-                
-            }
-            _id = value;
-        }
-    }
+    [PrimaryKey] [AutoIncrement] 
+    public int Id { get; set; }
     
-    private int _id;
+
 
     
 }

@@ -1,11 +1,8 @@
-﻿
-
-
-
-using System.Text;
+﻿using System.Text;
 using MP01.DTOs;
 using MP01.Services;
 using MP01.Utilities;
+using SQLite;
 
 namespace MP01.Models;
 
@@ -16,17 +13,83 @@ public class NoteModel : BaseModel
     public string? Description { get; init; }
     
     public DateTime CreatedAt { get; init; }
-
+    
+    
     public int? CategoryId { get; set; }
+
+
+    private CategoryModel? _category;
+
+    [Ignore]
+    public CategoryModel? Category
+    {
+        get => _category;
+        set
+        {
+            if (_category != value)
+            {
+               
+                _category?.Notes.Remove(this);
+
+                _category = value;
+                CategoryId = _category?.Id;
+
+
+                if (_category != null && !_category.Notes.Contains(this))
+                {
+                    _category.Notes.Add(this);
+                }
+            }
+        }
+    }
+
 
 
     private int DaysSinceCreation => (DateTime.Now - CreatedAt).Days;
     
-    public void SetCategory(int? categoryId)
-    {
-        CategoryId = categoryId;
-    }
+   
+    public int? GroupId { get; set; }
     
+    private GroupModel? _group;
+    
+    [Ignore]
+    public GroupModel? Group
+    {
+        get => _group;
+        set
+        {
+            if (_group != value)
+            {
+                _group?.Notes.Remove(Id);
+                _group = value;
+                
+                GroupId = _group?.Id;
+
+                if (_group != null)
+                {
+                    _group.AddNoteToGroup(this);
+                }
+
+            }
+        }
+    }
+
+    public List<TaggedNotes> _taggedNotes = new();
+
+    public void AddTag(TagModel tag)
+    {
+        TaggedNotes.Create(tag, this);
+    }
+
+    public void RemoveTag(TagModel tag)
+    {
+        TaggedNotes.Remove(tag, this);
+    }
+
+    public List<TagModel> GetTags()
+    {
+        return _taggedNotes.Select(t => t.Tag).ToList();
+    }
     
     
     public static  NoteModel CreateNote(NoteDTO noteDTO)
@@ -35,11 +98,9 @@ public class NoteModel : BaseModel
         {
             TextNoteModel newNote = new TextNoteModel
             {
-                Id = ++MaxId,
                 CreatedAt = DateTime.Now,
                 Title = textNoteDTO.Title,
                 Description = textNoteDTO.Description,
-                Content = textNoteDTO.Content
             };
             return newNote;
         }
@@ -48,7 +109,6 @@ public class NoteModel : BaseModel
         {
             AccountNoteModel newNote = new AccountNoteModel
             {
-                Id = ++MaxId,
                 CreatedAt = DateTime.Now,
                 Title = accountNoteModel.Title,
                 Description = accountNoteModel.Description,
