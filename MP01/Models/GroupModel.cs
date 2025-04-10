@@ -6,7 +6,7 @@ namespace MP01.Models;
 public class GroupModel : BaseModel
 {
 
-    public readonly Dictionary<int, NoteModel> Notes = new();
+   
     
     public string GroupName { get; set; }
 
@@ -21,28 +21,48 @@ public class GroupModel : BaseModel
         GroupName = groupName;
     }
 
+    //Asocjacje Kwalifikowana
+    private readonly Dictionary<int, NoteModel> Notes = new();
+    
     public void RemoveNote(int id)
     {
-        if(Notes.TryGetValue(id, out NoteModel note))
+        NoteModel? model = null;
+        if(Notes.TryGetValue(id, out var note))
+           model = note;
+        
+        if (Notes.ContainsKey(id))
         {
-            if (note != null) note.Group = null;
+            Notes.Remove(id);
         }
+        
+        if(model != null)
+          if(model.Group == this)
+              model.Group = null;
+        
+
+        
+       
     }
 
     public void AddNoteToGroup(NoteModel note)
     {
         Notes.TryAdd(note.Id, note);
 
-        if (note.Group != this)
+        if(note.Group != this)
             note.Group = this;
-        
-        
     }
+
+    public Dictionary<int, NoteModel> GetNotes()
+    {
+        return Notes.ToDictionary(note => note.Key, note => note.Value);
+    }
+    //
     
     public NoteModel? GetNoteFromGroup(int id)
     {
         return Notes.GetValueOrDefault(id);
     }
+    
     
     public static GroupModel CreateGroup(string groupName)
     {

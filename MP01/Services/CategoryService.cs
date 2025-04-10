@@ -1,5 +1,4 @@
-﻿using MP01.Context;
-using MP01.DTOs;
+﻿using MP01.DTOs;
 using MP01.Models;
 using MP01.Utilities;
 
@@ -7,21 +6,18 @@ namespace MP01.Services;
 
 public class CategoryService
 {
-    private readonly AppDbContext _context;
- 
-    private List<CategoryModel> _categories;
 
-    public CategoryService()
+ 
+    private List<CategoryModel> _categories = new();
+
+
+    public CategoryModel AddCategory(CategoryDTO categoryDTO)
     {
-        _context = ServiceLocator.Get<AppDbContext>();
-        _categories = _context.GetAllOfType<CategoryModel>();
-    }
-    
-    public void AddCategory(CategoryDTO categoryDTO)
-    {
-        _context.Add(CategoryModel.CreateCategory(categoryDTO));
-        _categories = _context.GetAllOfType<CategoryModel>();
-        ServiceLocator.Get<NoteService>().InitCategories();
+        CategoryModel categoryModel = CategoryModel.CreateCategory(categoryDTO);
+        
+        _categories.Add(categoryModel);
+        
+        return categoryModel;
     }
     
 

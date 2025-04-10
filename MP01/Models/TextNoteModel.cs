@@ -7,20 +7,55 @@ namespace MP01.Models;
 
 public class TextNoteModel : NoteModel
 {
-    public string? TextBlocksJson { get; set; }
+    private static string NoteTypeString = "Text Note";
 
-    private static string NoteTypeString => "Text Note";
+    
+    
+    //Asocjacje z atrybutem
+    private List<NoteWithSource> Sources = new();
 
-
-    [Ignore]
-    private List<TextBlock> TextBlocks
+    public void AddSourceLink(NoteWithSource ns)
     {
-        get => string.IsNullOrEmpty(TextBlocksJson)
-            ? new List<TextBlock>()
-            : JsonSerializer.Deserialize<List<TextBlock>>(TextBlocksJson);
-        set => TextBlocksJson = JsonSerializer.Serialize(value);
+        if(Sources.Contains(ns))
+            return;
+        
+        if (ns.Note == this)
+        {
+            Sources.Add(ns);
+        }
     }
 
+    public void RemoveSourceLink(NoteWithSource ns)
+    {
+        if(!Sources.Contains(ns))   
+            return;
+        
+        Sources.Remove(ns);
+        
+        if (ns.Note == this)
+        {
+            ns.Remove();
+        }
+
+    }
+
+    public List<SourceNoteModel> GetSourceLinks()
+    {
+        return Sources.Select(t => t.SourceNote).ToList();
+    }
+    
+    
+    public List<NoteWithSource> GetNotesLinks()
+    {
+        return Sources.ToList();
+    }
+    //
+    
+
+    //Asocjacje  Kompozycja 
+    
+    private List<TextBlock> TextBlocks = new();
+   
 
     public void AddTextBlock(string title, string content)
     {
@@ -43,13 +78,38 @@ public class TextNoteModel : NoteModel
             TextBlocks = list;
         }
     }
-
-
+    
     public void ClearTextBlocks()
     {
         TextBlocks = new List<TextBlock>();
     }
 
+    public int GetTextCount()
+    {
+        return TextBlocks.Count;
+    }
+    
+
+
+    private class TextBlock : BaseModel
+    {
+        public string? Title { get; set; }
+        public string? Content { get; set; }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (!string.IsNullOrWhiteSpace(Title))
+                sb.AppendLine($"Title: {Title}");
+        
+            if (!string.IsNullOrWhiteSpace(Content))
+                sb.AppendLine($"Content: {Content}");
+
+            return sb.ToString().Trim();
+        }
+    }
+    //
+    
     public override string ToString()
     {
         return base.ToString() + $", NoteType: {NoteTypeString}";
@@ -73,24 +133,5 @@ public class TextNoteModel : NoteModel
         }
 
         return stringBuilder.ToString();
-    }
-
-
-    private class TextBlock : BaseModel
-    {
-        public string? Title { get; set; }
-        public string? Content { get; set; }
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            if (!string.IsNullOrWhiteSpace(Title))
-                sb.AppendLine($"Title: {Title}");
-        
-            if (!string.IsNullOrWhiteSpace(Content))
-                sb.AppendLine($"Content: {Content}");
-
-            return sb.ToString().Trim();
-        }
     }
 }

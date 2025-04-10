@@ -12,7 +12,7 @@ public class NotesView
     private readonly NoteService _noteService;
     private readonly CategoryService _categoryService;
     private readonly GroupService _groupService;
-    private readonly TagService _tagService;
+
     
     
     public NotesView()
@@ -20,10 +20,9 @@ public class NotesView
         _noteService = ServiceLocator.Get<NoteService>();
         _categoryService = ServiceLocator.Get<CategoryService>();
         _groupService = ServiceLocator.Get<GroupService>();
-        _tagService = ServiceLocator.Get<TagService>();
     }
     
-    public void CreateCategoryFromView()
+    public CategoryModel CreateCategoryFromView()
     {
         Console.WriteLine("<<<<<<CATEGORY CREATION>>>>>>");
         
@@ -39,7 +38,7 @@ public class NotesView
             CategoryName = categoryName
         };
         
-        _categoryService.AddCategory(categoryDTO);
+        return _categoryService.AddCategory(categoryDTO);
     }
 
     private NoteDTO CreateNoteFromView()
@@ -68,38 +67,8 @@ public class NotesView
         return noteDTO;
     }
     
-    public void CreateAccountNoteFromView()
-    {
-        NoteDTO noteDTO = CreateNoteFromView();
-
-        string login = string.Empty;
-        while (string.IsNullOrEmpty(login))
-        {
-            Console.WriteLine("Enter the Login of the note:");
-            login = Console.ReadLine() ?? string.Empty;
-        }
-        
-        string password = string.Empty;
-        while (string.IsNullOrEmpty(password))
-        {
-            Console.WriteLine("Enter the Password of the note:");
-            password = Console.ReadLine() ?? string.Empty;
-        }
-        
-
-        
-        AccountNoteDTO accountNoteDto = new AccountNoteDTO
-        {
-            Title = noteDTO.Title,
-            Description = noteDTO.Description,
-            AccountLogin = login,
-            AccountPassword = password
-        };
-
-        _noteService.AddNote(accountNoteDto);
-    }
     
-    public void CreateTextNoteFromView()
+    public TextNoteModel CreateTextNoteFromView()
     {
         NoteDTO noteDTO = CreateNoteFromView();
 
@@ -111,8 +80,7 @@ public class NotesView
         
         TextNoteModel textNoteModel = (TextNoteModel)_noteService.AddNote(textNoteDto);
 
-        Console.WriteLine("Enter the content of the note: ");
-
+        
      
         while (true)
         {
@@ -134,7 +102,56 @@ public class NotesView
 
         _noteService.UpdateNote(textNoteModel);
 
+        return textNoteModel;
         
+    }
+    
+    public SourceNoteModel CreateSourceNoteFromView()
+    {
+        NoteDTO noteDTO = CreateNoteFromView();
+
+        Console.WriteLine("Enter the source type (Book, Website): ");
+        string? typeInput = Console.ReadLine();
+        ReferenceType type;
+        while (!Enum.TryParse(typeInput, out type))
+        {
+            Console.WriteLine("Invalid type. Please enter a valid ReferenceType:");
+            typeInput = Console.ReadLine();
+        }
+
+        Console.WriteLine("Enter the source (URL, file path, or other reference): ");
+        string source = string.Empty;
+        while (string.IsNullOrEmpty(source))
+        {
+            source = Console.ReadLine();
+        }
+     
+
+        Console.WriteLine("Enter the author (leave blank if unknown): ");
+        string? author = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(author))
+            author = null;
+
+        Console.WriteLine("Enter the published date (yyyy-MM-dd): ");
+        DateTime publishedDate;
+        while (!DateTime.TryParse(Console.ReadLine(), out publishedDate))
+        {
+            Console.WriteLine("Invalid date. Please use format yyyy-MM-dd:");
+        }
+
+        var sourceNoteDto = new SourceNoteDTO
+        {
+            Title = noteDTO.Title,
+            Description = noteDTO.Description,
+            Type = type,
+            Source = source,
+            Author = author,
+            PublishedDate = publishedDate
+        };
+
+        
+        
+        return (SourceNoteModel)_noteService.AddNote(sourceNoteDto);
     }
 
     public void CompleteNote(NoteModel note)
@@ -181,21 +198,31 @@ public class NotesView
 
     
 
-    public void CreateGroup()
+    public GroupModel CreateGroup()
     {
         Console.WriteLine("Set Group Name:");
         string groupName = Console.ReadLine()?.Trim() ?? string.Empty;
-        
-        
-        _groupService.AddGroup(GroupModel.CreateGroup(groupName));
-        
+
+        GroupModel groupModel = GroupModel.CreateGroup(groupName);
+        _groupService.AddGroup(groupModel);
+        return groupModel;
     }
-    
+
+    public NoteModel? GetSpecialNoteFromView<T>() where T : NoteModel, new()
+    {
+        List<NoteModel> notes = _noteService.GetNotesByType<T>().Cast<NoteModel>().ToList();
+        return ViewGetterNote(notes);
+    }
+
     public NoteModel? GetNoteFromView()
     {
         
         List<NoteModel> notes = _noteService.GetAllNotes();
-        
+        return ViewGetterNote(notes);
+    }
+
+    private NoteModel? ViewGetterNote(List<NoteModel> notes)
+    {
         if(notes.Count == 0)
             return null;
         
@@ -219,8 +246,6 @@ public class NotesView
         }
         
         return null;
-        
-        
     }
     
     public void ViewNote(NoteModel note)
@@ -285,55 +310,157 @@ public class NotesView
         _noteService.UpdateNote(noteModel);
     }
     
-    public TagModel CreateTag()
+   
+
+    public NoteWithSource? SetSourceToNote()
     {
-        Console.Write("Enter tag name: ");
-        string? tagName = Console.ReadLine();
-
-        List<TagModel> tags =  _tagService.GetTags();
-
-        TagModel? tagModel = tags.Find(t => t.TagName == tagName);
+        TextNoteModel? note = (TextNoteModel)GetSpecialNoteFromView<TextNoteModel>();
+        SourceNoteModel? sourceNote = (SourceNoteModel)GetSpecialNoteFromView<SourceNoteModel>();
         
-        if (tagModel != null)
+        if(sourceNote == null || note == null)
+            return null;
+        
+        Console.WriteLine("Enter a quote from the source (or leave blank):");
+        string? quote = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(quote)) quote = null;
+
+        Console.WriteLine("Enter a comment (or leave blank):");
+        string? comment = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(comment)) comment = null;
+
+        Console.WriteLine("Enter the page number (or leave blank):");
+        string? pageInput = Console.ReadLine();
+        int? pageNumber = null;
+        if (int.TryParse(pageInput, out int parsedPage))
+            pageNumber = parsedPage;
+
+        Console.WriteLine("Is this the primary source? (y/n):");
+        bool isPrimary = Console.ReadLine()?.Trim().ToLower() == "y";
+
+        NoteWithSourceDTO dto = new NoteWithSourceDTO
         {
-            return tagModel;
-        }
+            SourceNote = sourceNote,
+            Note = note,
+            Quote = quote,
+            Comment = comment,
+            PageNumber = pageNumber,
+            IsPrimary = isPrimary
+        };
 
-        tagModel = TagModel.CreateTag(tagName);
-        _tagService.AddTag(tagModel);
-        Console.WriteLine($"Tag '{tagName}' created with ID {tagModel.Id}.");
-        
-
-        return tagModel;
+        return NoteWithSource.Create(dto);
     }
 
-    public void TagNote()
+    public void ViewNotesWithSource()
     {
-        NoteModel? note = GetNoteFromView();
-        if (note == null)
-        {
-            Console.WriteLine("Note not found.");
-            return;
-        }
-
-        TagModel tagModel = CreateTag();
-        TaggedNotes.Create(tagModel , note);        
-        Console.WriteLine($"Note '{note.Title}' tagged with '{tagModel.TagName}'.");
-    }
-
-    public void ViewTagsAndNotes()
-    {
-        List<TagModel> tags = _tagService.GetTags();
+        List<SourceNoteModel> sourceNoteModels = _noteService.GetNotesByType<SourceNoteModel>();
         
-        Console.WriteLine(tags.Count);
         
-        foreach (TagModel tag in tags)
+        foreach (SourceNoteModel sourceNote in sourceNoteModels)
         {
-            foreach (TaggedNotes taggedNotes in tag._taggedNotes)
+            foreach (NoteWithSource var in sourceNote.GetNotesLinks())
             {
-                Console.WriteLine($"Note: {taggedNotes.Note.Title}, Tag: {taggedNotes.Tag.TagName}");
+                Console.WriteLine(var);
             }
         }
+    }
+
+    public  void TestAssociations()
+    {
+        Console.WriteLine("=== Testing Associations ===");
+        /*
+        // 1. Simple association: Note ↔ Category
+        var category = CreateCategoryFromView();
+        var note = new NoteModel { Title = "Work Note" };;
+
+        // Link both sides
+        note.Category = category;
+
+
+        Console.WriteLine($"Category contains note: {category.GetNotes().Contains(note)}"); // true
+
+
+        // Remove from Category side
+        category.RemoveNote(note);
+        Console.WriteLine($"After removing from category - category contains note: {category.GetNotes().Contains(note)}"); // false
+        Console.WriteLine($"Note still references category: {note.Category != null}"); // false
+
+        note.Category = category;
+        
+        // Now remove from Note side
+        note.Category = null;
+        Console.WriteLine($"After removing from note - note's category is null: {note.Category == null}, {category.GetNotes().Contains(note)}"); // true false
+
+        
+        //Add category to note from Category side
+        category.AddNote(note);
+        Console.WriteLine($"After removing from note - note's category is null: {note.Category == null}, {category.GetNotes().Contains(note)}"); // false true
+        
+        /*
+        // 2. Composition: Note → TextBlock
+        var textNote = CreateTextNoteFromView();
+
+        Console.WriteLine($"Note has {textNote.GetTextCount()} text blocks"); 
+        textNote.ClearTextBlocks();
+        Console.WriteLine($"After clearing: note has {textNote.GetTextCount()} text blocks"); // 0
+        */
+        
+        // 3. Association with attributes: NoteWithSource
+        var textNote = new TextNoteModel{Title = "Text Note"};
+        var sourceNote = new SourceNoteModel{Title = "Source Note"};
+
+        NoteWithSourceDTO dto = new NoteWithSourceDTO{SourceNote = sourceNote, Note = textNote, Quote = "wee"};
+        
+        var link = NoteWithSource.Create(dto);
+
+        Console.WriteLine($"Link connects: {link.Note.Title}, {link.SourceNote.Title}"); // Target ← Source
+        Console.WriteLine($"Check sides: {sourceNote.GetNotesLinks().Contains(link)}, {link.Note.GetNotesLinks().Contains(link)}"); //true true
+        
+        // Remove by NoteWithSource
+        link.Remove();
+        Console.WriteLine($"After RemoveByNoteWithSource: Source is null? {link.SourceNote == null}"); // true
+        Console.WriteLine($"After RemoveByNoteWithSource: Note is null? {link.Note == null}"); // true
+        Console.WriteLine($"Check sides: {sourceNote.GetNotesLinks().Contains(link)}, {textNote.GetNotesLinks().Contains(link)}"); //false false
+        
+        
+        link = NoteWithSource.Create(dto);
+        
+        // Remove by text note
+        textNote.RemoveSourceLink(link);
+        Console.WriteLine($"After RemoveByTextNote: Source is null? {link.SourceNote == null}"); // true
+        Console.WriteLine($"After RemoveByTextNote: Note is null? {link.Note == null}"); // true
+        Console.WriteLine($"Check sides: {sourceNote.GetNotesLinks().Contains(link)}, {textNote.GetNotesLinks().Contains(link)}"); //false false
+        
+        
+        link = NoteWithSource.Create(dto);
+        
+        // Remove by source note
+        sourceNote.RemoveNote(link);
+        Console.WriteLine($"After RemoveBySourceNote: Source is null? {link.SourceNote == null}"); // true
+        Console.WriteLine($"After RemoveBySourceNote: Note is null? {link.Note == null}"); // true
+        Console.WriteLine($"Check sides: {sourceNote.GetNotesLinks().Contains(link)}, {textNote.GetNotesLinks().Contains(link)}"); //false false
+        
+        /*
+        // 4. Qualified association: Group ↔ Dictionary<Guid, NoteModel>
+        var group = CreateGroup();
+        var qualifiedNote = new NoteModel { Title = "Qualified Note" };
+
+        qualifiedNote.Group = group;
+        Console.WriteLine($"Group has note by ID: {group.GetNotes().ContainsKey(qualifiedNote.Id)}"); // true
+
+        // Remove from note
+        qualifiedNote.Group = null;
+        Console.WriteLine($"After removal from group: Contains note? {group.GetNotes().ContainsKey(qualifiedNote.Id)}"); // false
+
+
+        group.AddNoteToGroup(qualifiedNote);
+        Console.WriteLine($"Group has note by ID: {group.GetNotes().ContainsKey(qualifiedNote.Id)}"); // true
+
+        // Remove from group
+        group.RemoveNote(qualifiedNote.Id);
+        Console.WriteLine($"After removal from group: Contains note? {group.GetNotes().ContainsKey(qualifiedNote.Id)}"); // false
+
+        */
+        Console.WriteLine("=== Association Testing Complete ===");
     }
     
     

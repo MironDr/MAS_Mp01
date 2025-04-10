@@ -12,84 +12,61 @@ public class NoteModel : BaseModel
     
     public string? Description { get; init; }
     
+    private int DaysSinceCreation => (DateTime.Now - CreatedAt).Days;
     public DateTime CreatedAt { get; init; }
     
     
-    public int? CategoryId { get; set; }
-
+    //Asocjacje Zwykła
 
     private CategoryModel? _category;
-
-    [Ignore]
+    
     public CategoryModel? Category
     {
         get => _category;
-        set
+        
+        set 
         {
-            if (_category != value)
+            if (_category != null && _category.GetNotes().Contains(this))
             {
-               
-                _category?.Notes.Remove(this);
-
-                _category = value;
-                CategoryId = _category?.Id;
-
-
-                if (_category != null && !_category.Notes.Contains(this))
-                {
-                    _category.Notes.Add(this);
-                }
+                _category.RemoveNote(this);
+            }
+            
+            _category = value;
+              
+            if (_category != null)
+            {
+                _category.AddNote(this);
             }
         }
     }
-
-
-
-    private int DaysSinceCreation => (DateTime.Now - CreatedAt).Days;
+    //
     
-   
-    public int? GroupId { get; set; }
+    
+    //Asocjacje Kwalifikowana
     
     private GroupModel? _group;
     
-    [Ignore]
     public GroupModel? Group
     {
-        get => _group;
-        set
-        {
-            if (_group != value)
+            get => _group;
+            set 
             {
-                _group?.Notes.Remove(Id);
+                if (_group != null && _group.GetNotes().ContainsKey(Id))
+                {
+                    _group.RemoveNote(Id);
+                }
                 _group = value;
-                
-                GroupId = _group?.Id;
-
+              
                 if (_group != null)
                 {
                     _group.AddNoteToGroup(this);
                 }
-
             }
-        }
     }
-
-    public List<TaggedNotes> _taggedNotes = new();
-
-    public void AddTag(TagModel tag)
-    {
-        TaggedNotes.Create(tag, this);
-    }
-
-    public void RemoveTag(TagModel tag)
-    {
-        TaggedNotes.Remove(tag, this);
-    }
-
-    public List<TagModel> GetTags()
-    {
-        return _taggedNotes.Select(t => t.Tag).ToList();
-    }
+    //
+    
+    
+   
     
     
     public static  NoteModel CreateNote(NoteDTO noteDTO)
@@ -104,19 +81,22 @@ public class NoteModel : BaseModel
             };
             return newNote;
         }
-
-        if (noteDTO is AccountNoteDTO accountNoteModel)
+        
+        if (noteDTO is SourceNoteDTO sourceNoteDTO)
         {
-            AccountNoteModel newNote = new AccountNoteModel
+            SourceNoteModel newNote = new SourceNoteModel
             {
                 CreatedAt = DateTime.Now,
-                Title = accountNoteModel.Title,
-                Description = accountNoteModel.Description,
-                AccountLogin = accountNoteModel.AccountLogin,
-                AccountPassword = accountNoteModel.AccountPassword
+                Title = sourceNoteDTO.Title,
+                Description = sourceNoteDTO.Description,
+                PublishedDate = sourceNoteDTO.PublishedDate,
+                Author = sourceNoteDTO.Author,
+                Source = sourceNoteDTO.Source,
+                Type = sourceNoteDTO.Type
             };
             return newNote;
         }
+        
 
 
         throw new ArgumentException("Unknown note type");
@@ -151,7 +131,7 @@ public class NoteModel : BaseModel
         
         stringBuilder.Append($"Days since creation: {DaysSinceCreation}\n");
         
-        var category = ServiceLocator.Get<CategoryService>().GetCategoryById(CategoryId);
+        var category = ServiceLocator.Get<CategoryService>().GetCategoryById(Category?.Id);
         if (category != null)
         {
             stringBuilder.Append($"Category: {category.CategoryName}\n");

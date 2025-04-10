@@ -1,22 +1,12 @@
-﻿using MP01.Context;
-using MP01.Models;
+﻿using MP01.Models;
 using MP01.Services;
 using MP01.Utilities;
 using MP01.View;
 
 
-var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "mp01.sqlite");
-
-//Register NotesTypeManager
-ServiceLocator.Register(new NotesTypeManager());
-
-//Register DB
-ServiceLocator.Register(new AppDbContext(dbPath));
-
 //Register services
 ServiceLocator.Register(new GroupService());
 ServiceLocator.Register(new CategoryService());
-ServiceLocator.Register(new TagService());
 ServiceLocator.Register(new NoteService());
 
 
@@ -28,23 +18,26 @@ Main();
 
 static void Main()
 {
+    
     NotesView notesView = new NotesView();
+    notesView.TestAssociations();
+    
+   
 
     while (true)
     {
         Console.WriteLine("Select an action:");
         Console.WriteLine("1 - Create a category");
         Console.WriteLine("2 - Create a text note");
-        Console.WriteLine("3 - Create an account note");
-        Console.WriteLine("4 - Select category");
-        Console.WriteLine("5 - View a note");
-        Console.WriteLine("6 - Create a group");
-        Console.WriteLine("7 - Set group to note");
-        Console.WriteLine("8 - View groups");
-        Console.WriteLine("9 - Create a tag");
-        Console.WriteLine("10 - Tag a note");
-        Console.WriteLine("11 - View tags and their notes");
-        Console.WriteLine("12 - Exit");
+        Console.WriteLine("3 - Select category");
+        Console.WriteLine("4 - View a note");
+        Console.WriteLine("5 - Create a group");
+        Console.WriteLine("6 - Set group to note");
+        Console.WriteLine("7 - View groups");
+        Console.WriteLine("8 - Create a SourceNote");
+        Console.WriteLine("9 - Connect Source And Text Note");
+        Console.WriteLine("10 - View Notes With Source");
+        Console.WriteLine("11 - Exit");
         Console.Write("\nYour choice: ");
 
         string? choice = Console.ReadLine();
@@ -59,12 +52,8 @@ static void Main()
             case "2":
                 notesView.CreateTextNoteFromView();
                 break;
-
+            
             case "3":
-                notesView.CreateAccountNoteFromView();
-                break;
-
-            case "4":
                 noteModel = notesView.GetNoteFromView();
                 if (noteModel != null)
                 {
@@ -72,7 +61,7 @@ static void Main()
                 }
                 break;
 
-            case "5":
+            case "4":
                 noteModel = notesView.GetNoteFromView();
                 if (noteModel != null)
                 {
@@ -84,31 +73,31 @@ static void Main()
                 }
                 break;
 
-            case "6":
+            case "5":
                 notesView.CreateGroup();
                 break;
 
-            case "7":
+            case "6":
                 notesView.SetGroupToNote();
                 break;
 
-            case "8":
+            case "7":
                 notesView.ViewGroups();
                 break;
 
+            case "8":
+                notesView.CreateSourceNoteFromView();
+                break;
+
             case "9":
-                notesView.CreateTag();
+                notesView.SetSourceToNote();
                 break;
 
             case "10":
-                notesView.TagNote();
+                notesView.ViewNotesWithSource();
                 break;
 
             case "11":
-                notesView.ViewTagsAndNotes();
-                break;
-
-            case "12":
                 Console.WriteLine("Exiting program...");
                 return;
 
@@ -120,4 +109,5 @@ static void Main()
         Console.WriteLine("\nPress any key to continue...");
         Console.ReadKey();
     }
+    
 }
