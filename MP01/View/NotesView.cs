@@ -438,6 +438,15 @@ public class NotesView
         Console.WriteLine($"After RemoveBySourceNote: Source is null? {link.SourceNote == null}"); // true
         Console.WriteLine($"After RemoveBySourceNote: Note is null? {link.Note == null}"); // true
         Console.WriteLine($"Check sides: {sourceNote.GetNotesLinks().Contains(link)}, {textNote.GetNotesLinks().Contains(link)}"); //false false
+         
+        sourceNote.AddNote(link);
+        Console.WriteLine($"After AddBySourceNote: Source is null? {link.SourceNote == null}"); // true
+        Console.WriteLine($"After AddBySourceNote: Note is null? {link.Note == null}"); // true
+        Console.WriteLine($"Check sides: {sourceNote.GetNotesLinks().Contains(link)}, {textNote.GetNotesLinks().Contains(link)}"); //false false
+        textNote.AddSourceLink(link);
+        Console.WriteLine($"After AddBySourceNote: Source is null? {link.SourceNote == null}"); // true
+        Console.WriteLine($"After AddBySourceNote: Note is null? {link.Note == null}"); // true
+        Console.WriteLine($"Check sides: {sourceNote.GetNotesLinks().Contains(link)}, {textNote.GetNotesLinks().Contains(link)}"); //false false
         
         /*
         // 4. Qualified association: Group ↔ Dictionary<Guid, NoteModel>

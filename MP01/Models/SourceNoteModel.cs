@@ -17,6 +17,12 @@ public class SourceNoteModel : NoteModel
     
     public void AddNote(NoteWithSource ns)
     {
+        if (ns.Note == null)
+        {
+            Console.WriteLine("Note is null");
+            return;
+        }
+        
         if(Sources.Contains(ns))
             return;
         

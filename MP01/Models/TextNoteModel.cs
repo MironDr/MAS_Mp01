@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using MP01.DTOs;
 using SQLite;
@@ -16,6 +17,12 @@ public class TextNoteModel : NoteModel
 
     public void AddSourceLink(NoteWithSource ns)
     {
+        if (ns.SourceNote == null)
+        {
+            Console.WriteLine("Source is null");
+            return;
+        }
+        
         if(Sources.Contains(ns))
             return;
         
