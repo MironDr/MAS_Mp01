@@ -1,4 +1,6 @@
 ﻿using MP01.DTOs;
+using MP01.Services;
+using MP01.Utilities;
 
 namespace MP01.Models;
 
@@ -11,7 +13,7 @@ public class CategoryModel : BaseModel
     
     public void AddNote(NoteModel note)
     {
-        if (!Notes.Contains(note))
+        if (!Notes.Contains(note) && note.Group == null)
         {
             Notes.Add(note);
         }
@@ -44,6 +46,11 @@ public class CategoryModel : BaseModel
 
     public static CategoryModel CreateCategory(CategoryDTO categoryDTO)
     {
+        var categoryModel = ServiceLocator.Get<CategoryService>().GetCategories().Find(x => x.CategoryName == categoryDTO.CategoryName);
+
+        if(categoryModel != null)
+            throw new Exception("Category with this name already exists");
+        
         CategoryModel category = new CategoryModel
         {
             CategoryName = categoryDTO.CategoryName

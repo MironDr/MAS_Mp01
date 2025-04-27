@@ -26,6 +26,9 @@ public class NoteModel : BaseModel
         
         set 
         {
+            if(_group != null)
+                return;
+            
             if (_category != null && _category.GetNotes().Contains(this))
             {
                 _category.RemoveNote(this);
@@ -51,9 +54,12 @@ public class NoteModel : BaseModel
             get => _group;
             set 
             {
-                if (_group != null && _group.GetNotes().ContainsKey(Id))
+                if(_category != null)
+                    return;
+                
+                if (_group != null && _group.GetNotes().Contains(this))
                 {
-                    _group.RemoveNote(Id);
+                    _group.RemoveNote(this);
                 }
                 _group = value;
               
@@ -64,13 +70,41 @@ public class NoteModel : BaseModel
             }
     }
     //
-    
-    
+
+    private bool _isMainInGroup;
+    public bool IsMainInGroup
+    {
+        get => _isMainInGroup;
+        set
+        {
+            if (_group == null || value == _isMainInGroup)
+                return;
+            
+            if (value)
+            {
+                if (_group.GetMainNote() == null)
+                    _group.AddMainNote(this);
+            }
+            else
+            {
+                if (_group.GetMainNote() != null)
+                    _group.RemoveMainNote();
+            }
+
+
+            _isMainInGroup = value;
+           
+        }
+    }
    
     
     
     public static  NoteModel CreateNote(NoteDTO noteDTO)
     {
+        if(noteDTO.Title.Length > 50)
+            throw new ArgumentException("Title length must be less than 50 characters");
+        
+        
         if (noteDTO is TextNoteDTO textNoteDTO)
         {
             TextNoteModel newNote = new TextNoteModel

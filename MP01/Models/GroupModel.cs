@@ -6,8 +6,8 @@ namespace MP01.Models;
 public class GroupModel : BaseModel
 {
 
-   
-    
+
+    private NoteModel? _mainNote;
     public string GroupName { get; set; }
 
 
@@ -22,47 +22,65 @@ public class GroupModel : BaseModel
     }
 
     //Asocjacje Kwalifikowana
-    private readonly Dictionary<int, NoteModel> Notes = new();
+    private readonly List<NoteModel> Notes = new();
     
-    public void RemoveNote(int id)
+    public void RemoveNote(NoteModel note)
     {
-        NoteModel? model = null;
-        if(Notes.TryGetValue(id, out var note))
-           model = note;
-        
-        if (Notes.ContainsKey(id))
+        if (Notes.Contains(note))
         {
-            Notes.Remove(id);
+            Notes.Remove(note);
         }
         
-        if(model != null)
-          if(model.Group == this)
-              model.Group = null;
-        
-
-        
-       
+        if (note.Group == this)
+        {
+            note.Group = null;
+        }
     }
 
     public void AddNoteToGroup(NoteModel note)
     {
-        Notes.TryAdd(note.Id, note);
-
+        if (!Notes.Contains(note) && note.Category == null)
+        {
+            Notes.Add(note);
+        }
+        
         if(note.Group != this)
             note.Group = this;
     }
-
-    public Dictionary<int, NoteModel> GetNotes()
+    
+    public List<NoteModel> GetNotes()
     {
-        return Notes.ToDictionary(note => note.Key, note => note.Value);
+        return Notes.ToList();
     }
     //
-    
-    public NoteModel? GetNoteFromGroup(int id)
+
+
+    public void AddMainNote(NoteModel note)
     {
-        return Notes.GetValueOrDefault(id);
+        if(!Notes.Contains(note))
+            return;
+        
+        _mainNote = note;
+        
+        note.IsMainInGroup = true;
+    }
+
+    public void RemoveMainNote()
+    {
+        if(_mainNote == null)
+            return;
+
+        _mainNote.IsMainInGroup = false;
+        
+        _mainNote = null;
+        
     }
     
+
+    public NoteModel? GetMainNote()
+    {
+        return _mainNote;
+    }
     
     public static GroupModel CreateGroup(string groupName)
     {
@@ -79,9 +97,20 @@ public class GroupModel : BaseModel
         
         
         sb.AppendLine(outline);
-        foreach (int id in Notes.Keys)
+        foreach (NoteModel noteModel in Notes)
         {
-            string note ="|" + GetNoteFromGroup(id);
+            string note = string.Empty;
+            
+            if (_mainNote != null && _mainNote == noteModel)
+            {
+                note ="|[MAIN]" + noteModel;
+            }
+            else
+            {
+                note ="|" + noteModel;
+            }
+            
+            
             sb.Append(note);
             int iter = outline.Length - note.Length;
             for (int i = 0; i < iter-1; i++)
