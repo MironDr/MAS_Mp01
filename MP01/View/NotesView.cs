@@ -364,46 +364,120 @@ public class NotesView
         }
     }
 
-    public  void TestAssociations()
+    public  void TestRestrictions()
     {
-        Console.WriteLine("=== Testing Associations ===");
+        Console.WriteLine("=== Testing Restrictions ===");
+        
+        //Atrybutu
+        NoteDTO noteDto = new NoteDTO
+        {
+            Title = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaaaa",
+        };
+        
+        NoteModel? note = NoteModel.CreateNote(noteDto);
+        
+        Console.WriteLine(note == null);
+        
+        //Unique
+        CategoryDTO catDto = new CategoryDTO
+        {
+            CategoryName = "A"
+        };
+        CategoryModel? cat = CategoryModel.CreateCategory(catDto);
+        
+        Console.WriteLine(cat == null);
+        
+        CategoryModel? cat1 = CategoryModel.CreateCategory(catDto);
+     
+        Console.WriteLine(cat1 == null);
+        
+        //Subset
+        GroupModel groupModel = GroupModel.CreateGroup("Group1");
+        
+        TextNoteDTO noteDto1 = new TextNoteDTO
+        {
+            Title = "Note 1",
+            Description = "Note 1 description",
+        };
+        
+        TextNoteModel? note1 = (TextNoteModel?) NoteModel.CreateNote(noteDto1);
+        
+ 
+        groupModel.AddMainNote(note1);
+        Console.WriteLine(groupModel.GetMainNote() == null);
+        groupModel.AddNoteToGroup(note1);
+        groupModel.AddMainNote(note1);
+        Console.WriteLine(groupModel.GetMainNote() == null);
+        
+        //Ordered
+        note1.AddTextBlock("1","hello");
+        note1.AddTextBlock("2","world");
+        Console.WriteLine(note1.ToStringFull());
+        
+        //Bag
+        
+        SourceNoteDTO noteDto2 = new SourceNoteDTO
+        {
+            Title = "Note 2",
+            Description = "Note 2 description",
+            Source = "source",
+            Author = "author",
+            PublishedDate = DateTime.Now,
+            Type = ReferenceType.Book
+        };
+        
+        SourceNoteModel? note2 = (SourceNoteModel?) NoteModel.CreateNote(noteDto2);
+
+        NoteWithSourceDTO noteWithSourceDto = new NoteWithSourceDTO
+        {
+            SourceNote = note2,
+            Note = note1,
+            Comment = "comment",
+            IsPrimary = true,
+            PageNumber = 1,
+            Quote = "quote",
+        };
+        
+        NoteWithSource noteWithSource1 = NoteWithSource.Create(noteWithSourceDto);
+        Console.WriteLine(noteWithSource1 == null);
+        
+        
+        NoteWithSourceDTO noteWithSourceDto1 = new NoteWithSourceDTO
+        {
+            SourceNote = note2,
+            Note = note1,
+            Comment = "comment1",
+            IsPrimary = true,
+            PageNumber = 2,
+            Quote = "quote1",
+        };
+        
+        NoteWithSource noteWithSource2 = NoteWithSource.Create(noteWithSourceDto1);
+        Console.WriteLine(noteWithSource2 == null);
+        
+        //Xor
+        note1.Category = cat;
+        Console.WriteLine(note1.Category == null);
+        note1.Group = null;
+        note1.Category = cat;
+        Console.WriteLine(note1.Category == null);
+        
+        //Wlasne
+        note1.Category = null;
+        
+        note1.Group = groupModel;
+        note2.Group = groupModel;
+        
+        TextNoteModel? note3 = (TextNoteModel?) NoteModel.CreateNote(noteDto1);
+        TextNoteModel? note4 = (TextNoteModel?) NoteModel.CreateNote(noteDto1);
+        TextNoteModel? note5 = (TextNoteModel?) NoteModel.CreateNote(noteDto1);
+        
+        note3.Group = groupModel;
+        note4.Group = groupModel;
+        Console.WriteLine(groupModel.GetNotes().Count());
+        note5.Group = groupModel;
+        Console.WriteLine(groupModel.GetNotes().Count());
         /*
-        // 1. Simple association: Note ↔ Category
-        var category = CreateCategoryFromView();
-        var note = new NoteModel { Title = "Work Note" };;
-
-        // Link both sides
-        note.Category = category;
-
-
-        Console.WriteLine($"Category contains note: {category.GetNotes().Contains(note)}"); // true
-
-
-        // Remove from Category side
-        category.RemoveNote(note);
-        Console.WriteLine($"After removing from category - category contains note: {category.GetNotes().Contains(note)}"); // false
-        Console.WriteLine($"Note still references category: {note.Category != null}"); // false
-
-        note.Category = category;
-        
-        // Now remove from Note side
-        note.Category = null;
-        Console.WriteLine($"After removing from note - note's category is null: {note.Category == null}, {category.GetNotes().Contains(note)}"); // true false
-
-        
-        //Add category to note from Category side
-        category.AddNote(note);
-        Console.WriteLine($"After removing from note - note's category is null: {note.Category == null}, {category.GetNotes().Contains(note)}"); // false true
-        
-        /*
-        // 2. Composition: Note → TextBlock
-        var textNote = CreateTextNoteFromView();
-
-        Console.WriteLine($"Note has {textNote.GetTextCount()} text blocks"); 
-        textNote.ClearTextBlocks();
-        Console.WriteLine($"After clearing: note has {textNote.GetTextCount()} text blocks"); // 0
-        */
-        
         // 3. Association with attributes: NoteWithSource
         var textNote = new TextNoteModel{Title = "Text Note"};
         var sourceNote = new SourceNoteModel{Title = "Source Note"};
@@ -469,7 +543,7 @@ public class NotesView
         Console.WriteLine($"After removal from group: Contains note? {group.GetNotes().ContainsKey(qualifiedNote.Id)}"); // false
 
         */
-        Console.WriteLine("=== Association Testing Complete ===");
+        Console.WriteLine("=== Restrictions Testing Complete ===");
     }
     
     

@@ -57,10 +57,14 @@ public class NoteModel : BaseModel
                 if(_category != null)
                     return;
                 
+                if(value != null && value.GetNotes().Count > 3)
+                    return;
+                
                 if (_group != null && _group.GetNotes().Contains(this))
                 {
                     _group.RemoveNote(this);
                 }
+               
                 _group = value;
               
                 if (_group != null)
@@ -99,10 +103,13 @@ public class NoteModel : BaseModel
    
     
     
-    public static  NoteModel CreateNote(NoteDTO noteDTO)
+    public static  NoteModel? CreateNote(NoteDTO noteDTO)
     {
-        if(noteDTO.Title.Length > 50)
-            throw new ArgumentException("Title length must be less than 50 characters");
+        if (noteDTO.Title.Length > 50)
+        {
+            Console.WriteLine("Note title cannot exceed 50 characters");
+            return null;
+        }
         
         
         if (noteDTO is TextNoteDTO textNoteDTO)

@@ -39,7 +39,7 @@ public class GroupModel : BaseModel
 
     public void AddNoteToGroup(NoteModel note)
     {
-        if (!Notes.Contains(note) && note.Category == null)
+        if (!Notes.Contains(note) && note.Category == null && Notes.Count < 4)
         {
             Notes.Add(note);
         }

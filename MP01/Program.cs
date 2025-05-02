@@ -20,10 +20,10 @@ static void Main()
 {
     
     NotesView notesView = new NotesView();
-    notesView.TestAssociations();
+    notesView.TestRestrictions();
     
    
-
+/*
     while (true)
     {
         Console.WriteLine("Select an action:");
@@ -108,6 +108,7 @@ static void Main()
 
         Console.WriteLine("\nPress any key to continue...");
         Console.ReadKey();
+        
     }
-    
+    */
 }
