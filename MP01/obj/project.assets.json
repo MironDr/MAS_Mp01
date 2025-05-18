@@ -305,32 +305,25 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\oxyfa\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\miron\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\RidersProjects\\MP01\\MP01\\ConsoleApplicationNoteManager\\MP01\\MP01.csproj",
+      "projectUniqueName": "D:\\Projects\\MAS_Mp01\\MP01\\MP01.csproj",
       "projectName": "MP01",
-      "projectPath": "D:\\RidersProjects\\MP01\\MP01\\ConsoleApplicationNoteManager\\MP01\\MP01.csproj",
-      "packagesPath": "C:\\Users\\oxyfa\\.nuget\\packages\\",
-      "outputPath": "D:\\RidersProjects\\MP01\\MP01\\ConsoleApplicationNoteManager\\MP01\\obj\\",
+      "projectPath": "D:\\Projects\\MAS_Mp01\\MP01\\MP01.csproj",
+      "packagesPath": "C:\\Users\\miron\\.nuget\\packages\\",
+      "outputPath": "D:\\Projects\\MAS_Mp01\\MP01\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\oxyfa\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\miron\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
+        "C:\\Users\\miron\\.dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -376,7 +369,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Users\\miron\\.dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
